@@ -1,9 +1,10 @@
 import MySQLdb
+import config
 class MysqL(object):
 
     def __init__(self):
         try:
-            self.db = MySQLdb.connect(host="localhost", user="python", passwd="password", db="script_python")
+            self.db = MySQLdb.connect(host=config.HOST, user=config.USER, passwd=config.PASSWORD, db=config.DATABASE_NAME)
         except:
             self.db = None
             print 'Error connect'
