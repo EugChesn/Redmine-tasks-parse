@@ -22,6 +22,7 @@ class MysqL(object):
                 cursor = self.db.cursor()
                 cursor.execute("""INSERT INTO tasks(redminetask,redmineuser,username,email,scope,status) VALUES (%s,%s,%s,%s,%s,%s)""",(num,redminetask,username,email,scope,status))
                 self.db.commit()
+                print('The data was successfully loaded')
             except:
                 print 'Execute Error mysql'
                 self.db.rollback()
