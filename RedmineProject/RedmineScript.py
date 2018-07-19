@@ -22,7 +22,7 @@ def get_all_users():
     list_user = []
     for u in users:
         for of in u.custom_fields:
-            user = ClassUser.User(u.firstname,u.lastname,of,u.mail,u.id,u.login)
+            user = ClassUser.User(u.firstname,u.lastname,of.value,u.mail,u.id,u.login)
             list_user.append(user)
     return list_user
 
@@ -99,7 +99,7 @@ def get_describe_of_issue():
 
             elif match_d is not None:
                 temp_str2 = word_upper(issue.description)
-                contain_user_str2 = temp_str2.split(' ')
+                contain_user_str2 = temp_str2
 
                 users_task2 = []
                 for us in full_name_u:
