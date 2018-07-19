@@ -27,5 +27,20 @@ class MysqL(object):
                 print 'Execute Error mysql'
                 self.db.rollback()
 
+    def mysqlSelect(self):
+        if self.db is not None:
+            try:
+                cursor = self.db.cursor()
+                cursor.execute("SELECT * FROM tasks")
+                row = cursor.fetchone()
+                while row is not None:
+                    print(row)
+                    #r = row[0]
+                    row = cursor.fetchone()
+            except:
+                print ("The data was successfully read")
+                self.db.rollback()
+
+
 
 

@@ -137,10 +137,13 @@ def get_describe_of_issue():
                 break
             scope += 1
             break
+
+        mysql.mysqlSelect()
         mysql.db.close()
     else:
         print ("Redmine object is None")
 
 redmine = auth_redmine_api()
 get_describe_of_issue()
+
 
