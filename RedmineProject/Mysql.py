@@ -9,12 +9,12 @@ class MysqL(object):
             self.db = None
             print 'Error connect'
 
-    def mysqlConfirm(self,task,numt):
+    def mysqlConfirm(self,task_usr,numt):
         if self.db is not None:
             try:
-                redminetask = int(task.Redmine_user_id)
-                username = task.Canonicalname
-                email = task.Email
+                redminetask = int(task_usr.redmine_id)
+                username = task_usr.canonical_name
+                email = task_usr.mail
                 num = numt
                 scope = 1 #vpn
                 status = 1 #new

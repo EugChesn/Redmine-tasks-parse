@@ -1,7 +1,6 @@
 from redminelib import Redmine
 import re
 import ClassUser
-import Task
 import Mysql
 import config
 global redmine
@@ -22,19 +21,19 @@ def get_all_users():
     users = redmine.user.all()
     list_user = []
     for u in users:
-        user = ClassUser.User(u.firstname,u.lastname)
-        list_user.append(user)
+        for of in u.custom_fields:
+            user = ClassUser.User(u.firstname,u.lastname,of,u.mail,u.id,u.login)
+            list_user.append(user)
     return list_user
 
-def print_task_issue(issue,task,scope):
-    name = task.Canonicalname.split('.')
-    print('Scope:  ' + scope)
-    print("Redmine user id:  " + task.Redmine_user_id)
-    print('Canonical name:  ' + task.Canonicalname)
-    print("Email:  " + task.Email)
-    if len(name) > 1:
-        print('Firstname:  ' + name[0])
-        print('Lastname:  ' + name[1])
+def print_task_issue(issue,usr,scope):
+    print ('Scope:  ' + scope)
+    print ("Redmine user id:  " + str(usr.redmine_id))
+    print ('Canonical name:  ' + usr.canonical_name)
+    print ("Email:  " + usr.mail)
+    print ('Firstname:  ' + usr.firstname)
+    print ('Lastname:  ' + usr.lastname)
+    print ('Office:  ' + usr.office)
     print ("Assigned to:  " + str(issue.assigned_to))
     print ("Status:  " + str(issue.status))
     print ("Subject:  " + issue.subject)
@@ -76,19 +75,22 @@ def get_describe_of_issue():
 
                 for us in users_task:
                     users_filt = redmine.user.filter(name = us)
+                    office = ''
                     for u in users_filt:
-                        task = Task.Task(str(u.id),u.login,u.mail)
-                        print_task_issue(issue,task,strings_for_search_en[scope])
+                        for of in u.custom_fields:
+                            office = of.value
+                        usr = ClassUser.User(u.firstname,u.lastname,office,u.mail,u.id,u.login)
+                        print_task_issue(issue, usr, strings_for_search_en[scope])
 
                         print("Confirm?")
                         s = raw_input('-y?->')
                         if s =='y':
                             print("Completed")
-                            mysql.mysqlConfirm(task,numt)
+                            mysql.mysqlConfirm(usr,numt)
                         elif s =='n':
                             try:
-                                if task.edit_task():
-                                    mysql.mysqlConfirm(task,numt)
+                                if usr.edit_task_user():
+                                    mysql.mysqlConfirm(usr,numt)
                                 else: print ("Data wasn't uploaded because field task is not editing")
                             except:
                                 print "Ups"
@@ -110,18 +112,21 @@ def get_describe_of_issue():
 
                 for us in users_task2:
                     users_filt = redmine.user.filter(name = us)
+                    office = ''
                     for u in users_filt:
-                        task = Task.Task(str(u.id),u.login,u.mail)
-                        print_task_issue(issue, task, strings_for_search_en[scope])
+                        for of in u.custom_fields:
+                            office = of.value
+                        usr = ClassUser.User(u.firstname,u.lastname,office,u.mail,u.id,u.login)
+                        print_task_issue(issue, usr, strings_for_search_en[scope])
 
                         print("Confirm?")
                         s = raw_input('-y?->')
                         if s == 'y':
-                            print("Completed")
+                            mysql.mysqlConfirm(usr, numt)
                         elif s == 'n':
                             try:
-                                if task.edit_task():
-                                    mysql.mysqlConfirm(task,numt)
+                                if usr.edit_task_user():
+                                    mysql.mysqlConfirm(usr,numt)
                                 else: print ("Data wasn't uploaded because field task is not editing")
                             except:
                                 print "Ups"
