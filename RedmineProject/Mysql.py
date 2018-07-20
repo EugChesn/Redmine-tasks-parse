@@ -9,18 +9,17 @@ class MysqL(object):
             self.db = None
             print 'Error connect'
 
-    def mysqlConfirm(self,task_usr,numt):
+    def mysqlConfirm(self,task_usr,issue):
         if self.db is not None:
             try:
                 redminetask = int(task_usr.redmine_id)
                 username = task_usr.canonical_name
                 email = task_usr.mail
-                num = numt
+                status = int(issue.status)
                 scope = 1 #vpn
-                status = 1 #new
 
                 cursor = self.db.cursor()
-                cursor.execute("""INSERT INTO tasks(redminetask,redmineuser,username,email,scope,status) VALUES (%s,%s,%s,%s,%s,%s)""",(num,redminetask,username,email,scope,status))
+                cursor.execute("""INSERT INTO tasks(redminetask,redmineuser,username,email,scope,status) VALUES (%s,%s,%s,%s,%s,%s)""",(issue.id,redminetask,username,email,scope,status))
                 self.db.commit()
                 print('The data was successfully loaded')
             except:
