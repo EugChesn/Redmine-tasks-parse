@@ -127,8 +127,9 @@ def get_describe_of_issue():
     else:
         print ("Redmine object is None")
 
-redmine = auth_redmine_api()
-full_name_u = get_all_users()
-get_describe_of_issue()
+if __name__ == '__main__':
+    redmine = auth_redmine_api()
+    full_name_u = get_all_users()
+    get_describe_of_issue()
 
 

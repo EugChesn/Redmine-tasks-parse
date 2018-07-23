@@ -40,6 +40,7 @@ class MysqL(object):
                 print ("The data was successfully read")
                 self.db.rollback()
 
-
+if __name__ == '__main__':
+    print('Please run to RedmineScript.py')
 
 
