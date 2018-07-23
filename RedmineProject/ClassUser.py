@@ -16,24 +16,18 @@ class User(object):
                '4 - Office')
 
         num_edit = str(input())
+        print("Enter value of field: ")
+        value = str(input())
         if num_edit == '1':
-            print("Enter value of field: ")
-            value = str(input())
             self.redmine_id = value
             return True
         elif num_edit == '2':
-            print("Enter value of field: ")
-            value = str(input())
             self.canonical_name = value
             return True
         elif num_edit == '3':
-            print("Enter value of field: ")
-            value = str(input())
             self.mail = value
             return True
         elif num_edit == '4':
-            print("Enter value of field: ")
-            value = str(input())
             self.office = value
             return True
         else:

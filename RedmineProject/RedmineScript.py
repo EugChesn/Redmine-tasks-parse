@@ -103,8 +103,7 @@ def get_describe_type(issue,field,mysql):
                     else:
                         print ("Please,try again later y/n \n data wasn't uploaded")
             return match
-        else:
-            return None
+    return None
 
 def get_describe_of_issue():
     if redmine is not None:
@@ -123,6 +122,7 @@ def get_describe_of_issue():
                 if get_describe_type(issue,str(s),mysql) is None and s!='3':
                     print ('Not found scope \n')
                 else:
+                    mysql.mysqlSelect()
                     break
     else:
         print ("Redmine object is None")
