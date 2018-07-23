@@ -16,8 +16,7 @@ class User(object):
                '4 - Office')
 
         num_edit = str(input())
-        print("Enter value of field: ")
-        value = str(input())
+        value = str(raw_input('Enter value of field:  '))
         if num_edit == '1':
             self.redmine_id = value
             return True
