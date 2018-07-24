@@ -3,8 +3,6 @@ import re
 import ClassUser
 import Mysql
 import config
-global redmine
-global full_name_u
 
 def auth_redmine_api():
     try:
@@ -53,9 +51,11 @@ def get_describe_type(issue,field,mysql):
 
     if field == '1':
         str_field_origin += issue.description
+        print ('Description of task '+ str(issue.id) + ':  ' + str_field_origin)
         str_field_low += issue.description.lower()
     elif field == '2':
         str_field_origin += issue.subject
+        print ('Subject of task ' + str(issue.id) + ':  ' + str_field_origin)
         str_field_low += issue.subject.lower()
     else:
         return None
@@ -74,7 +74,7 @@ def get_describe_type(issue,field,mysql):
                     users_task.append(us.firstname + ' ' + us.lastname)
 
             if not users_task:
-                print ('Look: ' + str(contain_user_str))
+                print ('Look list after regular expression: ' + str(contain_user_str))
                 print('users is not exist')
                 break
 
@@ -91,11 +91,11 @@ def get_describe_type(issue,field,mysql):
                     s = raw_input('-y?->')
                     if s == 'y':
                         print("Completed")
-                        mysql.mysqlConfirm(usr, issue)
+                        mysql.mysqlConfirm(usr,issue,scope+1)
                     elif s == 'n':
                         try:
                             if usr.edit_task_user():
-                                mysql.mysqlConfirm(usr, issue)
+                                mysql.mysqlConfirm(usr, issue,scope+1)
                             else:
                                 print ("Data wasn't uploaded because field task is not editing")
                         except:
@@ -103,6 +103,8 @@ def get_describe_type(issue,field,mysql):
                     else:
                         print ("Please,try again later y/n \n data wasn't uploaded")
             return match
+
+        scope += 1
     return None
 
 def get_describe_of_issue():
@@ -120,16 +122,34 @@ def get_describe_of_issue():
             while True:
                 s = input_field_search()
                 if get_describe_type(issue,str(s),mysql) is None and s!='3':
-                    print ('Not found scope \n')
+                    print ('Not found \n')
                 else:
                     mysql.mysqlSelect()
                     break
+
+        s = raw_input('Do you want to clear the database? y/n   ')
+        if s == 'y':
+            print ('1 - All \n2 - Task_id')
+            hd = raw_input()
+            if hd == '1':
+                mysql.mysqlClear()
+            elif hd == '2':
+                t = int(raw_input(':  '))
+                mysql.mysqlDelete(t)
+        else:
+            mysql.db.close()
+
     else:
         print ("Redmine object is None")
 
-if __name__ == '__main__':
+def Run():
+    global redmine
     redmine = auth_redmine_api()
+    global full_name_u
     full_name_u = get_all_users()
     get_describe_of_issue()
+
+if __name__ ==  '__main__':
+    Run()
 
 
