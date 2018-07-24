@@ -63,6 +63,13 @@ class MysqL(object):
                 print ('Delete databases error!')
                 self.db.rollback()
 
+    def mysqlDisconnect(self):
+        try:
+            self.db.close()
+            print ('Disconnect complete successful')
+        except:
+            print ('Disconnect db error')
+
 if __name__ == '__main__':
     print('Please run to RedmineScript.py')
 

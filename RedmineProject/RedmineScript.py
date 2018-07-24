@@ -136,8 +136,8 @@ def get_describe_of_issue():
             elif hd == '2':
                 t = int(raw_input(':  '))
                 mysql.mysqlDelete(t)
-        else:
-            mysql.db.close()
+
+        mysql.mysqlDisconnect()
 
     else:
         print ("Redmine object is None")
