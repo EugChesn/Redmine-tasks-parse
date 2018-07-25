@@ -1,5 +1,7 @@
+from __future__ import print_function
 import MySQLdb
 import config
+
 class MysqL(object):
 
     def __init__(self):
@@ -7,7 +9,7 @@ class MysqL(object):
             self.db = MySQLdb.connect(host=config.HOST, user=config.USER, passwd=config.PASSWORD, db=config.DATABASE_NAME)
         except:
             self.db = None
-            print 'Error connect'
+            print ('Error connect')
 
     def mysqlConfirm(self,task_usr,issue,scop):
         if self.db is not None:
@@ -16,14 +18,15 @@ class MysqL(object):
                 username = task_usr.canonical_name
                 email = task_usr.mail
                 status = int(issue.status)
-                scope =  scop #vpn
+                scope =  scop #vpn,sgx,git
 
+                sql_str = "INSERT INTO tasks(redminetask,redmineuser,username,email,scope,status) VALUES (%s,%s,%s,%s,%s,%s)"
                 cursor = self.db.cursor()
-                cursor.execute("""INSERT INTO tasks(redminetask,redmineuser,username,email,scope,status) VALUES (%s,%s,%s,%s,%s,%s)""",(issue.id,redminetask,username,email,scope,status))
+                cursor.execute(sql_str,(issue.id,redminetask,username,email,scope,status,))
                 self.db.commit()
                 print('The data was successfully loaded')
             except:
-                print 'Execute Error mysql'
+                print ('Execute Error mysql')
                 self.db.rollback()
 
     def mysqlSelect(self):
@@ -31,11 +34,13 @@ class MysqL(object):
             try:
                 cursor = self.db.cursor()
                 cursor.execute("SELECT * FROM tasks")
+
                 row = cursor.fetchone()
                 while row is not None:
-                    print(row)
-                    #r = row[0]
+                    for r in row:
+                        print (r , end = "  ")
                     row = cursor.fetchone()
+                    print("\n")
             except:
                 print ("The data was successfully read")
                 self.db.rollback()
