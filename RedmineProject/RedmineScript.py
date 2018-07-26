@@ -1,8 +1,13 @@
+#!/usr/bin/python
 from redminelib import Redmine
 import re
 import ClassUser
 import Mysql
 import config
+global result
+#from timeit import default_timer as timer
+
+
 
 def auth_redmine_api():
     try:
@@ -13,7 +18,8 @@ def auth_redmine_api():
         print("Error auth")
 
 def word_upper(string_d):
-    temp_s = re.findall(r'[A-Z]\w+(?<!_)',string_d)
+    #temp_s = re.findall(r'[A-Z]\w+(?<!_)',string_d)
+    temp_s = re.findall(r'\b[A-Z]{1}[a-z]+\b',string_d)
     return temp_s
 
 def get_all_users():
@@ -38,6 +44,10 @@ def print_task_issue(issue,usr,scope):
     print ("Subject:  " + issue.subject)
     print ("Description:  " + issue.description)
     print ("Name of project:  " + str(issue.project))
+
+    global result
+    result_str = str(issue.id)+ "\n" + scope + "\n" + str(usr.redmine_id) + "\n" + usr.canonical_name + "\n" + usr.mail + "\n" + usr.firstname + "\n" + usr.lastname + "\n" + usr.office + "\n" + str(issue.assigned_to) + "\n" + str(issue.status) + "\n" + str(issue.subject) + "\n" + issue.description + "\n" + str(issue.project)
+    result = result_str.split("\n")
 
 def input_field_search():
     while True:
@@ -86,7 +96,6 @@ def get_describe_type(issue,field,mysql):
                         office = of.value
                     usr = ClassUser.User(u.firstname, u.lastname, office, u.mail, u.id, u.login)
                     print_task_issue(issue, usr, strings_for_search_en[scope])
-
                     print("Confirm?")
                     s = raw_input('-y?->')
                     if s == 'y':
@@ -148,6 +157,7 @@ def Run():
     global full_name_u
     full_name_u = get_all_users()
     get_describe_of_issue()
+
 
 if __name__ ==  '__main__':
     Run()
