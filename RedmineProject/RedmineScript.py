@@ -1,12 +1,16 @@
 #!/usr/bin/python
 from redminelib import Redmine
+from jinja2 import Environment, DictLoader
 import re
+import sys
 import ClassUser
 import Mysql
+import Issue
 import config
-global result
-#from timeit import default_timer as timer
+import argparse
 
+global list_issue
+list_issue = []
 
 
 def auth_redmine_api():
@@ -18,7 +22,6 @@ def auth_redmine_api():
         print("Error auth")
 
 def word_upper(string_d):
-    #temp_s = re.findall(r'[A-Z]\w+(?<!_)',string_d)
     temp_s = re.findall(r'\b[A-Z]{1}[a-z]+\b',string_d)
     return temp_s
 
@@ -31,7 +34,10 @@ def get_all_users():
             list_user.append(user)
     return list_user
 
-def print_task_issue(issue,usr,scope):
+def print_task_issue(issue,usr,scope,list_issue):
+    Issue_print = Issue.TaskRedmine(issue,usr,scope)
+    list_issue.append(Issue_print)
+
     print ('Scope:  ' + scope)
     print ("Redmine user id:  " + str(usr.redmine_id))
     print ('Canonical name:  ' + usr.canonical_name)
@@ -44,10 +50,6 @@ def print_task_issue(issue,usr,scope):
     print ("Subject:  " + issue.subject)
     print ("Description:  " + issue.description)
     print ("Name of project:  " + str(issue.project))
-
-    global result
-    result_str = str(issue.id)+ "\n" + scope + "\n" + str(usr.redmine_id) + "\n" + usr.canonical_name + "\n" + usr.mail + "\n" + usr.firstname + "\n" + usr.lastname + "\n" + usr.office + "\n" + str(issue.assigned_to) + "\n" + str(issue.status) + "\n" + str(issue.subject) + "\n" + issue.description + "\n" + str(issue.project)
-    result = result_str.split("\n")
 
 def input_field_search():
     while True:
@@ -95,7 +97,7 @@ def get_describe_type(issue,field,mysql):
                     for of in u.custom_fields:
                         office = of.value
                     usr = ClassUser.User(u.firstname, u.lastname, office, u.mail, u.id, u.login)
-                    print_task_issue(issue, usr, strings_for_search_en[scope])
+                    print_task_issue(issue, usr, strings_for_search_en[scope],list_issue)
                     print("Confirm?")
                     s = raw_input('-y?->')
                     if s == 'y':
@@ -116,16 +118,14 @@ def get_describe_type(issue,field,mysql):
         scope += 1
     return None
 
-def get_describe_of_issue():
+def get_describe_of_issue(numt):
+    mysql = Mysql.MysqL()
     if redmine is not None:
-        mysql = Mysql.MysqL()
-        print('Task> ')
-        numt = int(input())
-
         try:
             issue = redmine.issue.get(numt)
         except:
             print("Error, task is not exist")
+            raise SystemExit
 
         if mysql.db is not None and full_name_u is not None:
             while True:
@@ -151,15 +151,81 @@ def get_describe_of_issue():
     else:
         print ("Redmine object is None")
 
-def Run():
-    global redmine
-    redmine = auth_redmine_api()
-    global full_name_u
-    full_name_u = get_all_users()
-    get_describe_of_issue()
+def reportHtml():
+    res = []
+    count = 0
 
+    if len(list_issue) > 0:
+        for i in list_issue:
+            res.append([])
+            res[count].append(str(i.issue.id))
+            res[count].append(i.scope)
+            res[count].append(str(i.user.redmine_id))
+            res[count].append(i.user.canonical_name)
+            res[count].append(i.user.mail)
+            res[count].append(i.user.firstname)
+            res[count].append(i.user.lastname)
+            res[count].append(str(i.user.office))
+            res[count].append(str(i.issue.assigned_to))
+            res[count].append(str(i.issue.status))
+            res[count].append(i.issue.subject)
+            res[count].append(i.issue.description)
+            res[count].append(str(i.issue.project))
+
+            count += 1
+
+        count_is = len(res)
+        count_sub_is = len(res[0])
+
+    html = '''<!DOCTYPE html>
+    <html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      </head>
+      <body>
+       <table border="1" width="100%" cellpadding="5">
+       <tr>
+       <th>Id task </th><th>Scope</th><th>User id</th><th>Canonical name</th><th>Email</th><th>Firstname</th><th>Lastname</th><th>Office</th><th>Assigned to</th><th>Status</th><th>Subject</th><th>Description</th><th>Name Progect</th>
+        </tr>
+        {% for i in range(len) %}
+        <tr>
+            {% for j in range(len_sub) %}
+            <th>{{name[i][j]}}</th>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+       </table>
+      </body>
+    </html>
+    '''
+
+    env = Environment(loader=DictLoader({'index.html': html}))
+    template = env.get_template('index.html')
+
+    f = open("index.html", 'w')
+    f.write(template.render(name=res, len=count_is, len_sub=count_sub_is))
+    f.close()
+
+def create_parser_arg():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t',type = int)
+    parser.add_argument('-r',nargs='?',type = str,default = "html")
+    return parser
 
 if __name__ ==  '__main__':
-    Run()
+    parser = create_parser_arg()
+    namespace = parser.parse_args(sys.argv[1:])
+    num = namespace.t
+    rep = namespace.r
+
+    global redmine
+    global full_name_u
+    redmine = auth_redmine_api()
+    full_name_u = get_all_users()
+    get_describe_of_issue(num)
+
+    if rep == "html":
+        reportHtml()
+
 
 
