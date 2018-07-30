@@ -208,8 +208,8 @@ def reportHtml():
 
 def create_parser_arg():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t',type = int)
-    parser.add_argument('-r',nargs='?',type = str,default = "html")
+    parser.add_argument('-t',type = int,help ="Number of task redmine")
+    parser.add_argument('-r',type = str,choices = ['html'],help = "Argument format (support html)")
     return parser
 
 if __name__ ==  '__main__':
