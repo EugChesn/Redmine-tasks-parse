@@ -89,6 +89,7 @@ def get_describe_type(issue,field,mysql,full_name_u):
             if not users_task:
                 print ('Look list after regular expression: ' + str(contain_user_str))
                 print('users is not exist')
+                print ("Url:    " + issue.url)
                 break
 
             for us in users_task:
@@ -133,7 +134,8 @@ def get_describe_of_issue(numt,full_name_u):
                 s = input_field_search()
                 list_issue = get_describe_type(issue, str(s), mysql, full_name_u)
                 if list_issue is None and s!='3':
-                    print ('Not found \n')
+                    print ('Not found ')
+                    print ("Url:    " + issue.url + '\n')
                 else:
                     mysql.mysqlSelect()
                     break
@@ -141,12 +143,18 @@ def get_describe_of_issue(numt,full_name_u):
         s = raw_input('Do you want to clear the database? y/n   ')
         if s == 'y':
             print ('1 - All \n2 - Task_id')
-            hd = raw_input()
-            if hd == '1':
-                mysql.mysqlClear()
-            elif hd == '2':
-                t = int(raw_input(':  '))
-                mysql.mysqlDelete(t)
+            try:
+                hd = raw_input()
+                if hd == '1':
+                    mysql.mysqlClear()
+                elif hd == '2':
+                    t = int(raw_input(':  '))
+                    mysql.mysqlDelete(t)
+                else:
+                    print ("1 or 2!")
+            except:
+                print ('Ups error input')
+                SystemExit(1)
 
         mysql.mysqlDisconnect()
         return list_issue
