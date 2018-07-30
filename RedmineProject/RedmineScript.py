@@ -9,10 +9,6 @@ import Issue
 import config
 import argparse
 
-global list_issue
-list_issue = []
-
-
 def auth_redmine_api():
     try:
         redmine = Redmine(config.REDMINE_URL, key = config.REDMINE_KEY)
@@ -52,13 +48,16 @@ def print_task_issue(issue,usr,scope,list_issue):
     print ("Description:  " + issue.description)
     print ("Name of project:  " + str(issue.project))
 
+    return list_issue
+
 def input_field_search():
     while True:
         s = raw_input('1 - description \n' +'2 - subject \n' + '3 - exit \n')
         if s == '1' or s == '2' or s == '3':
             return s
 
-def get_describe_type(issue,field,mysql):
+def get_describe_type(issue,field,mysql,full_name_u):
+    list_issue = []
     str_field_low = ''
     str_field_origin = ''
 
@@ -75,6 +74,7 @@ def get_describe_type(issue,field,mysql):
 
     scope = 0
     strings_for_search_en = ['vpn','sgx','git','svn']
+    list_issue_res = []
 
     for str_s in strings_for_search_en:
         match = re.search(str_s, str_field_low)
@@ -98,7 +98,7 @@ def get_describe_type(issue,field,mysql):
                     for of in u.custom_fields:
                         office = of.value
                     usr = ClassUser.User(u.firstname, u.lastname, office, u.mail, u.id, u.login)
-                    print_task_issue(issue, usr, strings_for_search_en[scope],list_issue)
+                    list_issue_res = print_task_issue(issue, usr, strings_for_search_en[scope],list_issue)
                     print("Confirm?")
                     s = raw_input('-y?->')
                     if s == 'y':
@@ -114,12 +114,12 @@ def get_describe_type(issue,field,mysql):
                             print "Ups confirm to database"
                     else:
                         print ("Please,try again later y/n \n data wasn't uploaded")
-            return match
+            return list_issue_res
 
         scope += 1
     return None
 
-def get_describe_of_issue(numt):
+def get_describe_of_issue(numt,full_name_u):
     mysql = Mysql.MysqL()
     if redmine is not None:
         try:
@@ -131,7 +131,8 @@ def get_describe_of_issue(numt):
         if mysql.db is not None and full_name_u is not None:
             while True:
                 s = input_field_search()
-                if get_describe_type(issue,str(s),mysql) is None and s!='3':
+                list_issue = get_describe_type(issue, str(s), mysql, full_name_u)
+                if list_issue is None and s!='3':
                     print ('Not found \n')
                 else:
                     mysql.mysqlSelect()
@@ -148,16 +149,18 @@ def get_describe_of_issue(numt):
                 mysql.mysqlDelete(t)
 
         mysql.mysqlDisconnect()
-
+        return list_issue
     else:
         print ("Redmine object is None")
+        return None
 
-def reportHtml():
+
+def reportHtml(list_task):
     res = []
     count = 0
 
-    if len(list_issue) > 0:
-        for i in list_issue:
+    if len(list_task) > 0:
+        for i in list_task:
             res.append([])
             res[count].append(str(i.issue.id))
             res[count].append(i.scope)
@@ -226,14 +229,14 @@ def main():
         except:
             print ("Error number")
             SystemExit(1)
+
     global redmine
-    global full_name_u
     redmine = auth_redmine_api()
     full_name_u = get_all_users()
-    get_describe_of_issue(num)
+    list_task = get_describe_of_issue(num,full_name_u)
 
-    if rep == "html":
-        reportHtml()
+    if rep == "html" and list_task is not None:
+        reportHtml(list_task)
 
 if __name__ ==  '__main__':
     main()
