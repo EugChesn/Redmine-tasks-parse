@@ -20,6 +20,7 @@ def auth_redmine_api():
         return redmine
     except:
         print("Error auth")
+        SystemExit(1)
 
 def word_upper(string_d):
     temp_s = re.findall(r'\b[A-Z]{1}[a-z]+\b',string_d)
@@ -212,12 +213,19 @@ def create_parser_arg():
     parser.add_argument('-r',type = str,choices = ['html'],help = "Argument format (support html)")
     return parser
 
-if __name__ ==  '__main__':
+def main():
     parser = create_parser_arg()
     namespace = parser.parse_args(sys.argv[1:])
     num = namespace.t
     rep = namespace.r
 
+    if num is None:
+        try:
+            n = raw_input("Enter number of task: ")
+            num = n
+        except:
+            print ("Error number")
+            SystemExit(1)
     global redmine
     global full_name_u
     redmine = auth_redmine_api()
@@ -226,6 +234,9 @@ if __name__ ==  '__main__':
 
     if rep == "html":
         reportHtml()
+
+if __name__ ==  '__main__':
+    main()
 
 
 
