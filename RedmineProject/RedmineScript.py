@@ -15,8 +15,7 @@ def auth_redmine_api():
         print("Auth complete\n")
         return redmine
     except:
-        print("Error auth")
-        SystemExit(1)
+        sys.exit('Auth redmine failed!')
 
 def word_upper(string_d):
     temp_s = re.findall(r'\b[A-Z]{1}[a-z]+\b',string_d)
@@ -126,8 +125,7 @@ def get_describe_of_issue(numt,full_name_u):
         try:
             issue = redmine.issue.get(numt)
         except:
-            print("Error, task is not exist")
-            raise SystemExit
+            sys.exit("Task is not exist!")
 
         if mysql.db is not None and full_name_u is not None:
             while True:
@@ -153,8 +151,7 @@ def get_describe_of_issue(numt,full_name_u):
                 else:
                     print ("1 or 2!")
             except:
-                print ('Ups error input')
-                SystemExit(1)
+                print('input error')
 
         mysql.mysqlDisconnect()
         return list_issue
@@ -214,9 +211,8 @@ def reportHtml(list_task):
     env = Environment(loader=DictLoader({'index.html': html}))
     template = env.get_template('index.html')
 
-    f = open("index.html", 'w')
-    f.write(template.render(name=res, len=count_is, len_sub=count_sub_is))
-    f.close()
+    with open ("tasks.html","w",) as result:
+        result.write(template.render(name=res, len=count_is, len_sub=count_sub_is))
 
 def create_parser_arg():
     parser = argparse.ArgumentParser()
@@ -230,16 +226,15 @@ def main():
     num = namespace.t
     rep = namespace.r
 
-    if num is None:
-        try:
-            n = raw_input("Enter number of task: ")
-            num = n
-        except:
-            print ("Error number")
-            SystemExit(1)
-
     global redmine
     redmine = auth_redmine_api()
+    if num is None:
+        try:
+            n = int(raw_input("Enter number of task: "))
+            num = n
+        except:
+            sys.exit("Error input number task")
+
     full_name_u = get_all_users()
     list_task = get_describe_of_issue(num,full_name_u)
 
