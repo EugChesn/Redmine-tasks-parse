@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# encoding=utf8
+
 from redminelib import Redmine
 from jinja2 import Environment, DictLoader
 import re
@@ -8,6 +10,9 @@ import Mysql
 import Issue
 import config
 import argparse
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 def auth_redmine_api():
     try:
@@ -52,16 +57,27 @@ def type_search(full_name_u,contain_user_str,t):
             if us.canonical_name in contain_user_str:
                 result.append(us.firstname + " " + us.lastname)
     elif t =='4':
+        tmp = []
         for us in full_name_u:
             if us.lastname in contain_user_str or us.firstname in contain_user_str:
-                print (us.firstname+ " " + us.lastname)
-                try: apr = raw_input('y/n\n')
-                except: sys.exit('error input approve')
-                if apr == 'y':
-                    result.append(us.firstname+ " " + us.lastname)
-                    try:a = raw_input('Continue? y/n\n')
-                    except:sys.exit('error input approve')
-                    if a == 'n':break
+                tmp.append(us.firstname + " " + us.lastname)
+
+        for t in enumerate(tmp):
+            print (str(t[0])+" "+str(t[1]))
+
+        e = True
+        while(e):
+            try:
+                a = int(raw_input('Num:\n'))
+                result.append(tmp[a])
+            except:print("Error input num!")
+            try:
+                exit = raw_input("Exit?y/n\n")
+                if exit == 'y':
+                    e = False
+            except:print"Error input exit!"
+
+        return  result
     else:
         print ('ups')
     return result
@@ -80,21 +96,23 @@ def print_issue(issue):
 def print_task_issue(issue,usr,scope,list_issue):
     Issue_print = Issue.TaskRedmine(issue,usr,scope)
     list_issue.append(Issue_print)
+
+    print ('Scope:  ' + scope)
+    print ("Redmine user id:  " + str(usr.redmine_id))
+    print ('Canonical name:  ' + usr.canonical_name)
+    print ("Email:  " + usr.mail)
+    print ('Firstname:  ' + usr.firstname)
+    print ('Lastname:  ' + usr.lastname)
+    print ('Office:  ' + usr.office)
     try:
-        print ('Scope:  ' + scope)
-        print ("Redmine user id:  " + str(usr.redmine_id))
-        print ('Canonical name:  ' + usr.canonical_name)
-        print ("Email:  " + usr.mail)
-        print ('Firstname:  ' + usr.firstname)
-        print ('Lastname:  ' + usr.lastname)
-        print ('Office:  ' + usr.office)
         print ("Assigned to:  " + str(issue.assigned_to))
-        print ("Status:  " + str(issue.status))
-        print ("Subject:  " + issue.subject)
-        print ("Description:  " + issue.description)
-        print ("Name of project:  " + str(issue.project))
     except:
-        print("Print error")
+        print("Print Assigned_to error")
+    print ("Status:  " + str(issue.status))
+    print ("Subject:  " + issue.subject)
+    print ("Description:  " + issue.description)
+    print ("Name of project:  " + str(issue.project))
+
     return list_issue
 
 def input_field_search():
@@ -213,22 +231,24 @@ def reportHtml(list_task):
     if len(list_task) > 0:
         for i in list_task:
             res.append([])
+            res[count].append(str(i.issue.id))
+            res[count].append(i.scope)
+            res[count].append(str(i.user.redmine_id))
+            res[count].append(i.user.canonical_name)
+            res[count].append(i.user.mail)
+            res[count].append(i.user.firstname)
+            res[count].append(i.user.lastname)
+            res[count].append((i.user.office))
             try:
-                res[count].append(str(i.issue.id))
-                res[count].append(i.scope)
-                res[count].append(str(i.user.redmine_id))
-                res[count].append(i.user.canonical_name)
-                res[count].append(i.user.mail)
-                res[count].append(i.user.firstname)
-                res[count].append(i.user.lastname)
-                res[count].append(str(i.user.office))
-                res[count].append(str(i.issue.assigned_to))
-                res[count].append(str(i.issue.status))
-                res[count].append(i.issue.subject)
-                res[count].append(i.issue.description)
-                res[count].append(str(i.issue.project))
+                res[count].append((i.issue.assigned_to))
             except:
-                print ("Append html file error")
+                print ("Error print assigned_to")
+                res[count].append("")
+            res[count].append(str(i.issue.status))
+            res[count].append(i.issue.subject)
+            res[count].append(i.issue.description)
+            res[count].append(str(i.issue.project))
+
             count += 1
 
         count_is = len(res)
