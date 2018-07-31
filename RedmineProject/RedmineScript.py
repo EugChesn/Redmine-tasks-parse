@@ -17,9 +17,15 @@ def auth_redmine_api():
     except:
         sys.exit('Auth redmine failed!')
 
-def word_upper(string_d):
-    temp_s = re.findall(r'\b[A-Z]{1}[a-z]+\b',string_d)
-    return temp_s
+def word_upper(string_d,type):
+    if type == '1' or type == '4': # firstname+lastname
+        return re.findall(r'\b[A-Z]{1}[a-z]+\b',string_d)
+    elif type =='2':# email
+        return re.findall(r'[a-zA-Z0-9]{1,50}[.]{1}[a-zA-Z0-9]{1,50}[@][a-z]{2,15}\.[a-z]{2,3}',string_d)
+    elif type =='3':#login
+        return re.findall(r'[a-zA-Z]{1,50}[.]{1}[a-zA-Z]{1,50}',string_d)
+    else:
+        return []
 
 def get_all_users():
     users = redmine.user.all()
@@ -30,23 +36,65 @@ def get_all_users():
             list_user.append(user)
     return list_user
 
+def type_search(full_name_u,contain_user_str,t):
+    result = []
+    if t == '1':
+        for us in full_name_u:
+            if us.firstname in contain_user_str and us.lastname in contain_user_str:
+                result.append(us.firstname + " " + us.lastname)
+
+    elif t =='2':
+        for us in full_name_u:
+            if us.mail in contain_user_str:
+                result.append(us.firstname + " " + us.lastname)
+    elif t=='3':
+        for us in full_name_u:
+            if us.canonical_name in contain_user_str:
+                result.append(us.firstname + " " + us.lastname)
+    elif t =='4':
+        for us in full_name_u:
+            if us.lastname in contain_user_str or us.firstname in contain_user_str:
+                print (us.firstname+ " " + us.lastname)
+                try: apr = raw_input('y/n\n')
+                except: sys.exit('error input approve')
+                if apr == 'y':
+                    result.append(us.firstname+ " " + us.lastname)
+                    try:a = raw_input('Continue? y/n\n')
+                    except:sys.exit('error input approve')
+                    if a == 'n':break
+    else:
+        print ('ups')
+    return result
+
+def print_issue(issue):
+    try:
+        print ("Url:    " + issue.url)
+        print ("Status:  " + str(issue.status))
+        print ("Subject:  " + issue.subject)
+        print ("Description:  " + issue.description)
+        print ("Name of project:  " + str(issue.project))
+        print ("Assigned to:  " + str(issue.assigned_to))
+    except:
+        print("Print error")
+
 def print_task_issue(issue,usr,scope,list_issue):
     Issue_print = Issue.TaskRedmine(issue,usr,scope)
     list_issue.append(Issue_print)
-
-    print ('Scope:  ' + scope)
-    print ("Redmine user id:  " + str(usr.redmine_id))
-    print ('Canonical name:  ' + usr.canonical_name)
-    print ("Email:  " + usr.mail)
-    print ('Firstname:  ' + usr.firstname)
-    print ('Lastname:  ' + usr.lastname)
-    print ('Office:  ' + usr.office)
-    print ("Assigned to:  " + str(issue.assigned_to))
-    print ("Status:  " + str(issue.status))
-    print ("Subject:  " + issue.subject)
-    print ("Description:  " + issue.description)
-    print ("Name of project:  " + str(issue.project))
-
+    try:
+        print ('Scope:  ' + scope)
+        print ("Redmine user id:  " + str(usr.redmine_id))
+        print ('Canonical name:  ' + usr.canonical_name)
+        print ("Email:  " + usr.mail)
+        print ('Firstname:  ' + usr.firstname)
+        print ('Lastname:  ' + usr.lastname)
+        print ('Office:  ' + usr.office)
+        print ("Assigned to:  " + str(issue.assigned_to))
+        print ("Status:  " + str(issue.status))
+        print ("Subject:  " + issue.subject)
+        print ("Description:  " + issue.description)
+        print ("Name of project:  " + str(issue.project))
+    except:
+        print("Print error")
     return list_issue
 
 def input_field_search():
@@ -62,11 +110,9 @@ def get_describe_type(issue,field,mysql,full_name_u):
 
     if field == '1':
         str_field_origin += issue.description
-        print ('Description of task '+ str(issue.id) + ':  ' + str_field_origin)
         str_field_low += issue.description.lower()
     elif field == '2':
         str_field_origin += issue.subject
-        print ('Subject of task ' + str(issue.id) + ':  ' + str_field_origin)
         str_field_low += issue.subject.lower()
     else:
         return None
@@ -78,17 +124,16 @@ def get_describe_type(issue,field,mysql,full_name_u):
     for str_s in strings_for_search_en:
         match = re.search(str_s, str_field_low)
         if match is not None:
-            contain_user_str = word_upper(str_field_origin)
+            print ("Type search:")
+            try: t = raw_input("1.Firstname+Lastname\n2.Email\n3.Login\n4.Lastname or Firstname\n")
+            except: sys.exit('Ups type_search')
 
-            users_task = []
-            for us in full_name_u:
-                if us.firstname in contain_user_str and us.lastname in contain_user_str:
-                    users_task.append(us.firstname + ' ' + us.lastname)
+            contain_user_str = word_upper(str_field_origin,t)
 
+            users_task = type_search(full_name_u,contain_user_str,t)
             if not users_task:
                 print ('Look list after regular expression: ' + str(contain_user_str))
                 print('users is not exist')
-                print ("Url:    " + issue.url)
                 break
 
             for us in users_task:
@@ -126,6 +171,7 @@ def get_describe_of_issue(numt,full_name_u):
             issue = redmine.issue.get(numt)
         except:
             sys.exit("Task is not exist!")
+        print_issue(issue)
 
         if mysql.db is not None and full_name_u is not None:
             while True:
@@ -167,20 +213,22 @@ def reportHtml(list_task):
     if len(list_task) > 0:
         for i in list_task:
             res.append([])
-            res[count].append(str(i.issue.id))
-            res[count].append(i.scope)
-            res[count].append(str(i.user.redmine_id))
-            res[count].append(i.user.canonical_name)
-            res[count].append(i.user.mail)
-            res[count].append(i.user.firstname)
-            res[count].append(i.user.lastname)
-            res[count].append(str(i.user.office))
-            res[count].append(str(i.issue.assigned_to))
-            res[count].append(str(i.issue.status))
-            res[count].append(i.issue.subject)
-            res[count].append(i.issue.description)
-            res[count].append(str(i.issue.project))
-
+            try:
+                res[count].append(str(i.issue.id))
+                res[count].append(i.scope)
+                res[count].append(str(i.user.redmine_id))
+                res[count].append(i.user.canonical_name)
+                res[count].append(i.user.mail)
+                res[count].append(i.user.firstname)
+                res[count].append(i.user.lastname)
+                res[count].append(str(i.user.office))
+                res[count].append(str(i.issue.assigned_to))
+                res[count].append(str(i.issue.status))
+                res[count].append(i.issue.subject)
+                res[count].append(i.issue.description)
+                res[count].append(str(i.issue.project))
+            except:
+                print ("Append html file error")
             count += 1
 
         count_is = len(res)
