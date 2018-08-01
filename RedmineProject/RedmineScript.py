@@ -57,11 +57,29 @@ def type_search(full_name_u,contain_user_str,t):
             if us.canonical_name in contain_user_str:
                 result.append(us.firstname + " " + us.lastname)
     elif t =='4':
-        tmp = []
-        for us in full_name_u:
-            if us.lastname in contain_user_str or us.firstname in contain_user_str:
-                tmp.append(us.firstname + " " + us.lastname)
 
+        fl =True
+        while fl:
+            try:determ = raw_input("1.Firstname\n2.Lastname\n3.Don't know\n")
+            except: print ("Error input")
+            tmp = []
+            if determ == '1':
+                for us in full_name_u:
+                    if us.firstname in contain_user_str:
+                        tmp.append(us.firstname + " " + us.lastname)
+                        fl = False
+            elif determ == '2':
+                for us in full_name_u:
+                    if us.lastname in contain_user_str:
+                        tmp.append(us.firstname + " " + us.lastname)
+                        fl = False
+            elif determ == '3':
+                for us in full_name_u:
+                    if us.lastname in contain_user_str or us.firstname in contain_user_str:
+                        tmp.append(us.firstname + " " + us.lastname)
+                        fl = False
+
+        tmp.sort()
         for t in enumerate(tmp):
             print (str(t[0])+" "+str(t[1]))
 
@@ -143,7 +161,7 @@ def get_describe_type(issue,field,mysql,full_name_u):
         match = re.search(str_s, str_field_low)
         if match is not None:
             print ("Type search:")
-            try: t = raw_input("1.Firstname+Lastname\n2.Email\n3.Login\n4.Lastname or Firstname\n")
+            try: t = raw_input("1.Firstname and Lastname\n2.Email\n3.Login\n4.Lastname or Firstname\n")
             except: sys.exit('Ups type_search')
 
             contain_user_str = word_upper(str_field_origin,t)
