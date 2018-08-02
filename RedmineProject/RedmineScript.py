@@ -26,7 +26,7 @@ def word_upper(string_d,type):
     if type == '1' or type == '4': # firstname+lastname
         return re.findall(r'\b[A-Z]{1}[a-z]+\b',string_d)
     elif type =='2':# email
-        return re.findall(r'[a-zA-Z0-9]{1,50}[.]{1}[a-zA-Z0-9]{1,50}[@][a-z]{2,15}\.[a-z]{2,3}',string_d)
+        return re.findall(r'[a-zA-Z0-9]{1,50}\.[a-zA-Z0-9]{1,50}[@][a-z]{2,15}\.[a-z]{2,3}',string_d)
     elif type =='3':#login
         return re.findall(r'[a-zA-Z]{1,50}[.]{1}[a-zA-Z]{1,50}',string_d)
     else:
