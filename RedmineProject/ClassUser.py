@@ -8,6 +8,11 @@ class User(object):
         self.redmine_id = redmine_id
         self.canonical_name = login
 
+
+    def print_user(self):
+        print ("Id  " + str(self.redmine_id))
+        print ("Canonical name  " + self.canonical_name)
+
     def edit_task_user(self):
 
         print ('1 - Redmine_user_id \n'
@@ -37,8 +42,7 @@ class User(object):
         return self.firstname + ' '  + self.lastname
 
     def equal(self,user):
-        if self.firstname == user.firstname and self.lastname == user.lastname \
-                and self.office == user.office:
+        if self.canonical_name == user.canonical_name and self.office == user.office:
             return True
         else:
             return False
