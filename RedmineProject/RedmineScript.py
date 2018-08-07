@@ -148,6 +148,7 @@ class Redm:
             print("Print error")
 
     def print_task_issue(self,issue, usr, scope, list_issue):
+
         Issue_print = Issue.TaskRedmine(issue, usr, scope)
         list_issue.append(Issue_print)
 
@@ -296,8 +297,12 @@ class Redm:
                                     for u in list_issue:
                                         if u.redmine_id == id_user:
                                             self.confirm_db(u, issue, scope)
+                                            list_issue_res = self.print_task_issue(issue,u,
+                                                                                   strings_for_search_en[scope],
+                                                                                   list_issue_all)
                                             break
-                                    return list_issue
+
+                                    return list_issue_res
                                 elif ex == 'y':return None
                             except:
                                 print("Error input id")
